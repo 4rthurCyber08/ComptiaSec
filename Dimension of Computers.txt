@@ -6,3 +6,7 @@ Obfuscation
 Data Stream (Win Only)
 @cmd
 type malware.exe > legitprogram.exe:malware.exe
+
+
+Steganography
+ - Steghide
