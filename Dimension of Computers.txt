@@ -1,0 +1,8 @@
+Obfuscation
+ - Create an invisible file.
+  - Use ASCII 255 to have no filename
+  - Set an invisible Icon
+
+Data Stream (Win Only)
+@cmd
+type malware.exe > legitprogram.exe:malware.exe
