@@ -5,3 +5,12 @@ Use Start up wizard
 rivan
 C1sc0123
 Default Gateway 100
+
+
+@ASA
+enable
+C1sc0123
+conf t
+ username admin password C1sc0123 privilege 15
+ end
+copy run start
