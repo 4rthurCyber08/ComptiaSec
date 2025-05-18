@@ -1,0 +1,6 @@
+https://www.cisco.com/c/en/us/td/docs/security/firepower/quick_start/5508X/asa-5508-5516-gsg/asa.html#task_awr_mxy_xgb
+
+Use Start up wizard
+
+
+Default Gateway 100
