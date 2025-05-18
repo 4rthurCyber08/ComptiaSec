@@ -2,5 +2,6 @@ https://www.cisco.com/c/en/us/td/docs/security/firepower/quick_start/5508X/asa-5
 
 Use Start up wizard
 
-
+rivan
+C1sc0123
 Default Gateway 100
