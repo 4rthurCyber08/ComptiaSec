@@ -1,0 +1,102 @@
+Devops
+
+-Docker Conainer
+	Install Docker Engine for Linux
+	https://docs.docker.com/engine/install/
+	
+	Install Docker Desktop For MAC & WIN
+	https://www.docker.com/products/docker-desktop/
+
+	Managing a container
+		docker hub - a library for all existing images
+		https://hub.docker.com/
+	commands:
+		docker run -it hello-world					- download/run a specified program (if not installed)
+			-it means:
+				-t attach a terminal to the container
+				-i interactive, meaning the container should be allowed to recieve user input
+		docker run -it node
+			*Make sure docker desktop is running
+		docker image pull ubuntu 						- download a specified image
+		docker image pull ubuntu:2						- download a specified image with a specific tag (for downloading old version)
+		docker image pull python:slim					- download slim version image of python
+		docker image history ubuntu 					- show image history
+		docker image history --no-trunc ubuntu 			- show image history with no truncation
+		docker image inspect ubuntu 					- inspect image info
+		docker image ls 								- list existing images on system
+		docker [conatiner] run -it python				- builds a container of a specified image
+		docker [image] pull python						- downloads an image
+		docker [conatiner] start -i [conainer id]		- excecute container
+		docker container ls								- list containers with info
+			-as											- all containers (-a) and all size (-s)
+		docker run -it --name ubuntu-test ubuntu		- specify a name for the container running ubuntu
+		docker container rename ubuntu-test ub-to		- rename container name to ub-to
+		docker start [id/name]							- start a specific container
+		docker container start [id/name]
+		docker stop [id/name]							- stop a specific container
+		docker container stop [id/name]
+			stop will kill container then starting again will relaunch the container from scratch.
+		docker rm [id/name]								- delete container
+		docker container rm [id/name]
+			*must stop container first before removing
+		docker container ls -aq							- list all conainer ids
+		echo $(docker container ls -aq)					- pass the docker output as shell output
+		docker container rm $(docker container ls -aq)	- pass the id outputs as the argument for removing each container
+		docker run -it --rm ubuntu						- delete containers automatically if it's terminated
+		docker [container] create						- create container without accessing it.
+			-t / --tty									- attatch a terminal
+			-i / --interactive							- allow user input
+			-p											- port mappings
+			-v											- mounts
+			-e											- environment variables
+
+-Linux Crash Course
+	commands:
+		pwd - print working directory
+		cd - change directory
+		cd .. - move up a level
+		ls - list
+		mkdir - make directory
+		rm - remove
+		rm -R - remove including directory
+		cat - concatinate
+		touch - create new file
+		clear - clear current view
+		exit - exit current shell
+		apt update - update package definitions
+		apt install nano - install nano editor
+		
+-Web Server
+	docker run -it nginx
+
+	Enable access to container ports
+		Publish a port to allow access to other containers/devices:
+			-p flag (or --publish)
+			docker run -it -p 8888:80 nginx
+		Run a container in the background
+			-d flag (or --detach)
+			docker run -d -p 8888:80 nginx 
+				(omit -it)
+		docker container logs [id] - to show background process logs
+
+-Launch programs in containers
+	*numpy
+	
+	docker container run -it --rm python bash		- create a container with python installed but access the container via bash to install dependencies
+	pip install numpy
+	python
+	import numpy as np
+	
+-Debug container
+
+	docker container exec [options] [container] [command]		- execute an additional program in an existing container
+	docker container exec my-python pip install numpy			- install numpy in my-python container without accessing the container.
+
+-SEC 4 Task - Modify nginx web server
+	modify the root folder /usr/share/nginx/html
+	
+	/usr/share/nginx/html
+	<body style="background-color: lightgray">
+	<h1>Welcome to nginx in docker</h1>
+	
+	docker container exec -it [ID] bash
