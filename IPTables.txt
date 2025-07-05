@@ -17,7 +17,10 @@ ENABLE/INSTALL APPS
 5. HTTPS = 443
 6. MySQL = 3306
 7. FTP = 21
-8. SMTP = 
+8. TFTP = 69
+9. SMTP = 25
+10. IMAP = 143, IMAPS = 993, POP3 = 110, POP3S = 995, SUBMISSION = 587
+11. LDAP = 389, LDAPSSL = 636
 
 
 1. SSH
@@ -73,6 +76,17 @@ systemctl start nginx
 yum install openssl
 mkdir /etc/nginx/ssl
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/nginx/ssl/nginx-selfsigned.key -out /etc/nginx/ssl/nginx-selfsigned.crt
+
+  -----
+  Country Name (2 letter code) [XX]: PH
+  State or Province Name (full name) []: NCR
+  Locality Name (eg, city) [Default City]:MKT
+  Organization Name (eg, company) [Default Company Ltd]:RIVANCORP
+  Organizational Unit Name (eg, section) []:HQ
+  Common Name (eg, your name or your server's hostname) []:RIVAN
+  Email Address []:
+
+
 nano /etc/nginx/nginx.conf
 
 ~~~$
@@ -111,59 +125,87 @@ chmod 644 /etc/nginx/ssl/nginx-selfsigned.crt
 chmod 600 /etc/nginx/ssl/nginx-selfsigned.key
 
 
-
-***
-Enable MySQL
+6. MySQL
 
 @linux
-yum install mariadb
 yum install mariadb-server
 systemctl start mariadb
-systemctl enable --now mariadb
 
 
-
-***
-Enable FTP
+7. FTP
 
 @linux
-yum install ftp
 yum install vsftpd
 systemctl start vsftpd
-systemctl enable --now vsftpd
 
 
-
-***
-Enable TFTP
+8. TFTP
 
 @linux
-yum install tftp
-yum install tftp-server
+sudo yum install -y tftp-server tftp
+systemctl start tftp.service
+systemctl start tftp.socket
 
 
-
-***
-Enable SMTP
+9. SMTP
 
 @linux
-yum install postfix
+yum install postfix -y
+
+Modify the main.cf file of postfix
+@linux
 nano /etc/postfix/main.cf    
-
 ~~~$
 inet_interfaces = all
 ~~~$
 
 systemctl start postfix
-systemctl enable --now postfix
+ 
 
-
-***
-Enable SNMP
+10. IMAP, IMAPS, POP3, POP3S, SUBMISSION 
 
 @linux
-yum install net-snmp net-snmp-utils
+yum install dovecot  
 
+Modify dovecot.conf file of dovecot
+@linux
+nano /etc/dovecot/dovecot.conf
+
+~~~$
+# Protocols we want to be serving.
+protocols = imap pop3 lmtp submission
+~~~$
+
+systemctl start dovecot
+
+
+11. LDAP & LDAPSSL
+
+@linux
+yum install openldap openldap-servers openldap-clients
+systemctl start slapd.service  
+
+
+12. TACACS
+
+@linux
+dnf group install "Development Tools"
+yum install tcp_wrappers
+
+cd /etc/yum.repos.d/
+nano nux-misc.repo
+
+~~~$
+[nux-misc]
+name=Nux Misc
+baseurl=http://li.nux.ro/download/nux/misc/el6/x86_64/
+enabled=0
+gpgcheck=1
+gpgkey=http://li.nux.ro/download/nux/RPM-GPG-KEY-nux.ro
+~~~$
+
+yum --enablerepo=nux-misc install tac_plus
+nano /etc/tac_plus.conf
 
 
 ***
@@ -187,8 +229,10 @@ systemctl start nginx
 systemctl start mariadb
 systemctl start vsftpd
 systemctl start postfix
-
-
+systemctl start dovecot
+systemctl start slapd.service  
+systemctl start snapd
+systemctl start snapd.socket
 
 
 ****
