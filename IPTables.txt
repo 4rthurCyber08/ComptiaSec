@@ -1,41 +1,49 @@
-Linux (RHEL) Firewall and IP Tables
+Disable firewall and install the following apps to open Well-Known ports.
+
+### 
+Enter Privilege Mode
 
 @linux
 sudo su
 
 
-***
-Enable SSH
+### 
+ENABLE/INSTALL APPS
+
+1. SSH = 22
+2. TELNET = 23
+3. DNS = 53
+4. HTTP = 80
+5. HTTPS = 443
+6. MySQL = 3306
+7. FTP = 21
+8. SMTP = 
+
+
+1. SSH
 
 @linux
 systemctl start sshd
 systemctl enable --now sshd
 
 
-***
-Enable Telnet
+2. TELNET
 
 @linux
-yum install telnet-server
-yum install telnet
+yum install telnet -y
+yum install telnet-server -y
 systemctl start telnet.socket
 systemctl enable --now telnet.socket
 
 
-
-***
-Enable DNS
+3. DNS
 
 @linux
-yum install bind
-systemctl start named
-systemctl enable --now named
+yum install bind -y
 
 Modify named.conf file and change 127.0.0.1 to any for listening port and query
-
 @linux
 nano /etc/named.conf
-
 ~~~$
 options {
         listen-on port 53 { any; };
@@ -49,22 +57,17 @@ options {
         allow-query     { any; };
 ~~~$
 
-systemctl enable --now named
+systemctl start named
 
 
-
-***
-Enable HTTP
+4. HTTP
 
 @linux
 yum install nginx
 systemctl start nginx
-systemctl enable --now nginx
 
 
-
-***
-Enable HTTPS
+5. HTTPS
 
 @linux
 yum install openssl
