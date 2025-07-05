@@ -1,0 +1,194 @@
+Linux (RHEL) Firewall and IP Tables
+
+@linux
+sudo su
+
+
+***
+Enable SSH
+
+@linux
+systemctl start sshd
+systemctl enable --now sshd
+
+
+***
+Enable Telnet
+
+@linux
+yum install telnet-server
+yum install telnet
+systemctl start telnet.socket
+systemctl enable --now telnet.socket
+
+
+
+***
+Enable DNS
+
+@linux
+yum install bind
+systemctl start named
+systemctl enable --now named
+
+Modify named.conf file and change 127.0.0.1 to any for listening port and query
+
+@linux
+nano /etc/named.conf
+
+~~~$
+options {
+        listen-on port 53 { any; };
+        listen-on-v6 port 53 { ::1; };
+        directory       "/var/named";
+        dump-file       "/var/named/data/cache_dump.db";
+        statistics-file "/var/named/data/named_stats.txt";
+        memstatistics-file "/var/named/data/named_mem_stats.txt";
+        secroots-file   "/var/named/data/named.secroots";
+        recursing-file  "/var/named/data/named.recursing";
+        allow-query     { any; };
+~~~$
+
+systemctl enable --now named
+
+
+
+***
+Enable HTTP
+
+@linux
+yum install nginx
+systemctl start nginx
+systemctl enable --now nginx
+
+
+
+***
+Enable HTTPS
+
+@linux
+yum install openssl
+mkdir /etc/nginx/ssl
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/nginx/ssl/nginx-selfsigned.key -out /etc/nginx/ssl/nginx-selfsigned.crt
+nano /etc/nginx/nginx.conf
+
+~~~$
+# Settings for a TLS enabled server.
+#
+    server {
+        listen       443 ssl http2;
+        listen       [::]:443 ssl http2;
+        server_name  _;
+        root         /usr/share/nginx/html;
+
+        ssl_certificate "/etc/nginx/ssl/nginx-selfsigned.crt";
+        ssl_certificate_key "/etc/nginx/ssl/nginx-selfsigned.key";
+        ssl_session_cache shared:SSL:1m;
+        ssl_session_timeout  10m;
+        ssl_ciphers PROFILE=SYSTEM;
+        ssl_prefer_server_ciphers on;
+#
+#        # Load configuration files for the default server block.
+#        include /etc/nginx/default.d/*.conf;
+#
+        error_page 404 /404.html;
+            location = /40x.html {
+        }
+
+        error_page 500 502 503 504 /50x.html;
+            location = /50x.html {
+        }
+    }
+
+}
+~~~$
+
+systemctl restart nginx
+chmod 644 /etc/nginx/ssl/nginx-selfsigned.crt
+chmod 600 /etc/nginx/ssl/nginx-selfsigned.key
+
+
+
+***
+Enable MySQL
+
+@linux
+yum install mariadb
+yum install mariadb-server
+systemctl start mariadb
+systemctl enable --now mariadb
+
+
+
+***
+Enable FTP
+
+@linux
+yum install ftp
+yum install vsftpd
+systemctl start vsftpd
+systemctl enable --now vsftpd
+
+
+
+***
+Enable TFTP
+
+@linux
+yum install tftp
+yum install tftp-server
+
+
+
+***
+Enable SMTP
+
+@linux
+yum install postfix
+nano /etc/postfix/main.cf    
+
+~~~$
+inet_interfaces = all
+~~~$
+
+systemctl start postfix
+systemctl enable --now postfix
+
+
+***
+Enable SNMP
+
+@linux
+yum install net-snmp net-snmp-utils
+
+
+
+***
+Install Docker
+
+@linux
+dnf -y install dnf-plugins-core
+dnf config-manager --add-repo https://download.docker.com/linux/rhel/docker-ce.repo
+dnf install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+systemctl start docker
+systemctl enable --now docker
+
+
+
+
+**** Enable Ports
+systemctl stop firewalld
+systemctl start telnet.socket
+systemctl start named
+systemctl start nginx
+systemctl start mariadb
+systemctl start vsftpd
+systemctl start postfix
+
+
+
+
+****
+sudo iptables -t nat -A PREROUTING -p tcp --dport 8080 -j DNAT --to-destination 10.10.10.10:80
+sudo iptables -A FORWARD -p tcp --dport <destination_port> -d <destination_ip> -j ACCEPT
+sudo service iptables save
