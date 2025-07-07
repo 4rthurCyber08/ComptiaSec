@@ -7,6 +7,11 @@ Enter Privilege Mode
 sudo su
 
 
+###
+Disable Firewall
+systemctl stop firewalld
+
+
 ### 
 ENABLE/INSTALL APPS
 
@@ -33,10 +38,8 @@ systemctl enable --now sshd
 2. TELNET
 
 @linux
-yum install telnet -y
-yum install telnet-server -y
+yum install telnet telnet-server -y
 systemctl start telnet.socket
-systemctl enable --now telnet.socket
 
 
 3. DNS
@@ -66,7 +69,7 @@ systemctl start named
 4. HTTP
 
 @linux
-yum install nginx
+yum install nginx -y
 systemctl start nginx
 
 
@@ -128,14 +131,14 @@ chmod 600 /etc/nginx/ssl/nginx-selfsigned.key
 6. MySQL
 
 @linux
-yum install mariadb-server
+yum install mariadb-server -y
 systemctl start mariadb
 
 
 7. FTP
 
 @linux
-yum install vsftpd
+yum install vsftpd -y
 systemctl start vsftpd
 
 
@@ -165,7 +168,7 @@ systemctl start postfix
 10. IMAP, IMAPS, POP3, POP3S, SUBMISSION 
 
 @linux
-yum install dovecot  
+yum install dovecot -y
 
 Modify dovecot.conf file of dovecot
 @linux
@@ -182,7 +185,7 @@ systemctl start dovecot
 11. LDAP & LDAPSSL
 
 @linux
-yum install openldap openldap-servers openldap-clients
+yum install openldap openldap-servers openldap-clients -y
 systemctl start slapd.service  
 
 
