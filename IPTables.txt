@@ -131,7 +131,7 @@ chmod 600 /etc/nginx/ssl/nginx-selfsigned.key
 6. MySQL
 
 @linux
-yum install mariadb-server -y
+yum install MariaDB-server MariaDB-client MariaDB-backup-y
 systemctl start mariadb
 
 
