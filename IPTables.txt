@@ -233,9 +233,17 @@ systemctl start mariadb
 systemctl start vsftpd
 systemctl start postfix
 systemctl start dovecot
-systemctl start slapd.service  
-systemctl start snapd
-systemctl start snapd.socket
+systemctl start slapd.service
+
+systemctl start docker
+
+
+** Jumpserver
+cd /opt/jumpserver-installer-v4.10.3
+./jmsctl.sh start
+
+** Semaphore
+systemctl start semaphore
 
 
 ****
