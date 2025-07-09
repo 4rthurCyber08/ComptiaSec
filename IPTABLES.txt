@@ -1,0 +1,82 @@
+
+NetFilter -firewall framework
+IPTables - control/manage NetFilter
+
+
+	Tables - collect of Chains
+		
+		Filter Tables	-	NAT Table	-	Mangle Table
+		Firewall			Redirect		Modify packets/connections
+	
+	Chains - 
+	
+		Filter
+		INPUT=inbound,ingress, OUTPUT=outbound,egress, FORWARD=forward
+	
+		NAT
+		OUTPUT, PREROUTING, POSTROUTING
+		
+		Mangel
+		INPUT, OUTPUT, FORWARD, PREROUTING, POSTROUTING
+	
+
+	TARGET - what happens to the packet
+	
+		ACCEPT
+		REJECT - DENY WITH LOG
+		DROP - SIMPLY DROP
+
+
+
+Start from scratch
+
+yum purge firewalld
+
+
+****
+
+iptables -F //flush
+iptables -L //list rules
+iptables -L -v //Verbose
+
+man iptables //guide
+
+
+
+iptables -P INPUT DROP
+iptables -P FORWARD DROP
+iptables -P OUTPUT ACCEPT
+
+iptables -A INPUT -p tcp -s 0.0.0.0/0 -d 192.168.101.136/32  --dport 22 -j ACCEPT
+iptables -A INPUT -p tcp -i ens224 --dport 22 -j ACCEPT
+
+iptables -A INPUT -p icmp -i ens224 -j ACCEPT
+
+
+iptables -A INPUT -p tcp --dport 22 -i ens224 -j ACCEPT
+iptables -A INPUT -p tcp --dport 3306 -i ens160 -j ACCEPT
+iptables -A INPUT -p tcp --dport 80 -j ACCEPT
+iptables -A INPUT -p tcp --dport 443 -j ACCEPT
+iptables -A INPUT -p ICMP -i ens224 -j DROP
+
+iptables -A INPUT -p tcp --dport 443 -d 208.8.8.153
+
+
+iptables-save
+
+***Add route to linux
+ip route add 10.10.10.0/24 via 10.10.10.10
+
+
+
+***Nat
+iptables -t nat -A POSTROUTING -o ens160 -j MASQUERADE
+
+***Port redirection
+
+
+***Enable Forwarding
+cat /proc/sys/net/ipv4/ip_forward
+
+
+
