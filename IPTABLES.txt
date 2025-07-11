@@ -80,3 +80,222 @@ cat /proc/sys/net/ipv4/ip_forward
 
 
 
+
+*******
+NetOps-FW Login Info:
+  localhost Login: root
+  Password: C1sc0123
+
+_____
+*****
+Access NetOps-FW via SecureCRT
+
+@NetOps-FW (via VMWARE)
+ip -4 addr
+
+Get the IP on its ens168 interface.
+  Expected Output.
+    2: ens160: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 1000
+       altname enp3s0
+	
+       inet 208.8.8.184/24 brd 208.8.8.255 scope global dynamic noprefixroute ens160
+       valid_lft 1366sec preferred_lft 1366sec
+
+  
+  In this example, 208.8.8.184 is the assigned IP address. 
+
+
+Open SecureCRT and select Quick Connect (Kidlat)
+  Protocol: Telnet
+  Hostname: Your NetOps-FW IP (ex. 208.8.8.184)
+  Port: 23
+  
+  Then, Connect
+  
+  
+_____
+*****
+UNSECURED FIREWALL
+
+Check the default configurations of the Firewall Policies.
+
+@NetOps-FW
+iptables -L
+
+Notice how all Chain Policies (INPUT:Inbound, OUTPUT:Outbound, FORWARD) are set to ACCEPT.
+It simply means traffic from all directions is allowed, which makes it UNSECURE.
+
+Verify: 
+
+Scan the open ports of your firewall using nmap.
+
+@cmd
+nmap -v 208.8.8.184
+
+*NOTE: Change 208.8.8.184 to your NetOps-FW IP
+  Expected Output.
+    Completed SYN Stealth Scan at 14:39, 0.04s elapsed (1000 total ports)
+    Nmap scan report for 208.8.8.184
+    Host is up (0.00099s latency).
+    Not shown: 990 closed tcp ports (reset)
+    PORT     STATE SERVICE
+    21/tcp   open  ftp
+    22/tcp   open  ssh
+    23/tcp   open  telnet
+    25/tcp   open  smtp
+    53/tcp   open  domain
+    80/tcp   open  http
+    389/tcp  open  ldap
+    443/tcp  open  https
+    636/tcp  open  ldapssl
+    3306/tcp open  mysql
+    MAC Address: 00:0C:29:39:30:62 (VMware)
+
+
+_____
+*****
+SECURE THE FIREWALL
+
+OUTBOUND Traffic is allowed by default as we want to access outside services.
+
+@NetOps-FW
+iptables -P OUTPUT ACCEPT
+
+
+FORWARD Traffic MUST be blocked as we haven't set any Forward traffic policies.
+
+@NetOps-FW
+iptables -P FORWARD DROP
+
+
+INBOUND Traffic MUST be blocked unless you want hackers into your network.
+
+@NetOps-FW
+iptables -P INPUT DROP
+
+
+
+!!CONGRATS!!
+You have secured your Firewall!
+
+And you also locked yourself out. 
+If you were work from home, you'd now have to go to the office and access the firewall via CLI
+
+
+_____
+*****
+SECURE YOUR ACCESS TO THE FIREWALL
+
+Know your PC's IP address on VMNet8
+
+@cmd
+ipconfig
+
+Find the section for VMnet8
+  Expected Output.
+  
+    Ethernet adapter VMware Network Adapter VMnet8:
+
+     Connection-specific DNS Suffix  . :
+     Link-local IPv6 Address . . . . . : fe80::fe5a:1ff0:4f33:4bd0%28
+     IPv4 Address. . . . . . . . . . . : 208.8.8.1
+     Subnet Mask . . . . . . . . . . . : 255.255.255.0
+     Default Gateway . . . . . . . . . :
+
+  In this example, the IP on VMnet8 is 208.8.8.1
+  
+  
+Access the firewall via VMWare and configure a rule that will allow your access.
+
+@NetOps-FW (via VMWARE)
+iptables -A INPUT -p tcp -s 208.8.8.1/32 -d 208.8.8.184/32 --dport 22 -j ACCEPT
+
+Verify:
+
+@NetOps-FW (via VMWARE)
+iptables -L -v
+
+  Expected Output.
+    Chain INPUT (policy DROP 665 packets, 146K bytes)
+    pkts bytes target     prot opt in     out     source               destination         
+       81  7974 ACCEPT     tcp  --  any    any     208.8.8.1            localhost.localdomain  tcp dpt:ssh
+
+
+Now connect to NetOps-FW via SecureCRT:
+  Protocol: SSH2
+  Hostname: Your NetOps-FW IP (ex. 208.8.8.184)
+  Port: 22
+  Username: root
+  
+  Then, Connect.
+  
+  Password: C1sc0123
+
+
+Allow an unsecured access to the firewall within its LAN using an interface as a destination.
+  
+  Check the interfaces on the NetOps-FW.
+  
+@NetOps-FW
+ip addr
+
+  Expected Output.
+    1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+        link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+        inet 127.0.0.1/8 scope host lo
+           valid_lft forever preferred_lft forever
+        inet6 ::1/128 scope host 
+           valid_lft forever preferred_lft forever
+    2: ens160: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 1000
+        link/ether 00:0c:29:39:30:62 brd ff:ff:ff:ff:ff:ff
+        altname enp3s0
+        inet 208.8.8.184/24 brd 208.8.8.255 scope global dynamic noprefixroute ens160
+           valid_lft 404sec preferred_lft 404sec
+        inet6 fe80::20c:29ff:fe39:3062/64 scope link noprefixroute 
+           valid_lft forever preferred_lft forever
+    3: ens192: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 1000
+        link/ether 00:0c:29:39:30:6c brd ff:ff:ff:ff:ff:ff
+        altname enp11s0
+        inet 192.168.101.147/24 brd 192.168.101.255 scope global dynamic noprefixroute ens192
+           valid_lft 404sec preferred_lft 404sec
+        inet6 fe80::20c:29ff:fe39:306c/64 scope link noprefixroute 
+           valid_lft forever preferred_lft forever
+    4: ens224: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 1000
+        link/ether 00:0c:29:39:30:76 brd ff:ff:ff:ff:ff:ff
+        altname enp19s0
+    5: ens256: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 1000
+        link/ether 00:0c:29:39:30:80 brd ff:ff:ff:ff:ff:ff
+        altname enp27s0
+
+  The interface "2: ens160" is the one that is connected to the internet.
+  The interface "3, 4, and 5" are connected within the LAN.
+
+Using interface "3: ens192", which has an IP of 192.168.101.147, we will use it to allow telnet access.
+
+@NetOps-FW
+iptables -A INPUT -p tcp -s 192.168.0.0/16 -i ens192 --dport 23 -j ACCEPT
+
+
+_____
+*****
+OPEN PORTS EXERCISE
+
+Setup
+
+@NetOps-FW
+ifconfig ens224 down
+ifconfig ens224 192.168.102.100 netmask 255.255.255.0 up
+ip route add 192.168.102.0/24 dev ens224
+ifconfig ens256 down
+ifconfig ens256 192.168.103.100 netmask 255.255.255.0 up
+ip route add 192.168.103.0/24 dev ens256
+
+
+Open ports for 192.168.102.100
+HTTP, HTTPS, SSH
+
+@NetOps-FW
+iptables -A INPUT -p tcp -s 0.0.0.0/0 -d 192.168.102.100 --dport 80 -j ACCEPT -m comment --comment " PERMIT HTTP "
+iptables -A INPUT -p tcp -s 0.0.0.0/0 -d 192.168.102.100 --dport 443 -j ACCEPT -m comment --comment " PERMIT HTTP "
+iptables -A INPUT -p tcp -s 0.0.0.0/0 -d 192.168.102.100 --dport ssh -j ACCEPT -m comment --comment " PERMIT HTTP "
+
