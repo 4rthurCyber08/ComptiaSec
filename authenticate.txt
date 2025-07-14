@@ -66,3 +66,63 @@ conf t
  end
 
  
+
+
+
+
+
+
+
+
+
+
+
+
+Take2
+
+Configure SSH (Password Auth)
+
+@cisco
+conf t
+ ip domain name sec.com
+ username admin privilege 15 secret pass
+ crypto key generate rsa modulus 2048 label sec
+ ip ssh rsa keypair-name sec
+ !
+ line vty 0 4
+  transport input ssh
+  login local
+  exec-timeout 0 0
+ end
+sh ip ssh
+sh crypto key mypubkey all
+
+
+Configure SSH (Pubkey Auth)
+
+@Cisco
+conf t
+ crypto key generate rsa modulus 2048 label sec exportable
+ crypto key export rsa sec pem terminal 3des C1sc0123
+ !crypto key export rsa sec pem url ftp://208.8.8.1/ 3des C1sc0123
+ username art privilege 15
+ ip ssh pubkeychain
+  username art
+   key-string
+   ...
+   ...
+   ...
+   exit
+   end
+
+Use an unencrypted public key for pubkeychain
+	ex.
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCZFMlC0N7Y5KGw6bDkweixg/zKmXWyJvqEdyixrsFWT14k/ugvCONAh24n1zWGwS6RvHRtQrdv5l0rO/flckTXvvOiHxRDJf+IH2DpP93wo6sC2TH9ujICy3E4
+FmgSzpfsDPRBxj8eiuG9npl5KThYLtiOLygUpeKBSMPJAkiPqXPEg3fQZOJRcIUNnOm4jLQ4cCCPI677gqd7G9CZNLn1UDzSnvOFgkvhpn7XSLn6tfh0aOzWfw5ZC8wQKOFkpLQonxiqYXREW2cepYSnNVsh2QqyK+9zYcrOHwK6JtW4hXgxpjiX99hllPo3szyTFeQT03P2YgaxasDg55k+29
+
+Do it either via SecureCRT or Linux
+
+@linux
+ssh-keygen -t rsa -b 2048 -f id
+fold -b -w 72 id.pub 
+#
